@@ -13,6 +13,30 @@ SET SERVEROUTPUT ON
 --running of the triggers in your report. Please ensure that you also display the relevant tables before and after 
 --(results of the trigger) the triggers are fired. (10 marks)
 
+
+--ROW LEVEL TRIGGER
+--A trigger to check an instance inserted into BOOKORDER has an order date PRIOR to todays date 
+--(ie a BOOKORDER cannot be placed in the future)
+create or replace TRIGGER ORDER_DATE_CHECK
+BEFORE INSERT OR UPDATE ON BOOKORDER
+FOR EACH ROW
+DECLARE
+    future_date exception;
+BEGIN
+    IF (:NEW.BO_ORDERDATE > SYSDATE)
+    THEN RAISE future_date;
+    END IF;
+EXCEPTION
+WHEN future_date THEN
+    raise_application_error(-20090, 'The order date is after todays date');
+END;
+/
+show error;
+
+
+--Test code
+insert into bookorder values(1021, 1001, TO_DATE('28-05-19', 'DD,MM,YY'), null, '95812 HIGHWAY 98**', 'EASTPOINT', 'FL', 32328);
+
 --l)
 --Write a procedure to insert a new book record. The procedure should also automatically calculate the book retail value. 
 --This retail is calculated as 112.5% of the book cost price plus 8.5% of the average cost price of the existing books. 
@@ -65,8 +89,11 @@ WHEN max_price THEN
     raise_application_error(-20020, 'Price increase is over 25%');
 END;
 
---Test Code
+--Test Code FAIL - Book retail increase over 25%
 UPDATE BOOK SET BOOK_RETAIL = BOOK_RETAIL*1.27 WHERE BOOK_ISBN = 0401140733;
+
+--Test Code PASS (up to 25% increase acceptable)
+UPDATE BOOK SET BOOK_RETAIL = BOOK_RETAIL*1.25 WHERE BOOK_ISBN = 0401140733;
 
 
 --n. Write a trigger that does not allow more than three author names to be associated with books under FITNESS category 
