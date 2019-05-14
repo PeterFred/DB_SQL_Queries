@@ -37,7 +37,7 @@ END;
 show error;
 
 --K) ROW LEVEL TRIGGER Test Code
-INSERT INTO customer VALUES(NULL, 'AAA', 'BBBB', 'd','e','f','g',123 );
+INSERT INTO customer VALUES(NULL, 'DOE', 'JOHN', 'P.O BOX 1231', 'LOS ANGELES','CA','27389', 1001);
 --See JPEG images for test results
 
 -- k) STATEMENT LEVEL TRIGGER This trigger logs which users inserts, updates or deletes a value in the 
@@ -74,6 +74,7 @@ show error
 
 
 --k) STATEMENT LEVEL TRIGGER Test Code (uses the sequence from above to insert null ID)
+--NB variables manipulated to check validility
 INSERT INTO customer VALUES(NULL, 'MORALES', 'BONITA', 'P.O. BOX 651', 'EASTPOINT', 'FL', '32328', NULL);
 --See JPEG images for test results
 
@@ -101,17 +102,9 @@ EXCEPTION
 END;
 /
 show error
-
---Test Code --FAIL - To many chars
-EXECUTE InsertBookRecord(98141269, 'Database Theory123456789123456789123456789', 
-	TO_DATE('19-04-2019', 'DD-MM-YYYY'), 4, 20, 'business' );
 	
 --Test Code --PASS --Correctly increases RRP
 EXECUTE InsertBookRecord(98141269, 'Database Theory', TO_DATE('19-04-2019', 'DD-MM-YYYY'), 4, 20, 'business' );
-
---Test Code --FAIL - ISBN already in DB
-EXECUTE InsertBookRecord(98141269, 'Database Theory', TO_DATE('19-04-2019', 'DD-MM-YYYY'), 4, 20, 'business' );
-
 
 --m. Write a trigger that does not allow the book retail price to be updated when the increase (in retail price) is over 25%. 
 --Provide test data and corresponding results to confirm that the trigger works. (4 marks)
@@ -139,12 +132,13 @@ UPDATE book SET book_retail = book_retail*1.27 WHERE book_isbn = 0401140733;
 UPDATE book SET book_retail = book_retail*1.2 WHERE book_isbn = 0401140733;
 
 
---n. Write a trigger that does not allow more than three author names to be associated with books under FITNESS category 
---(e.g. if a Book is added, it should only allow up to 3 book authors to be recorded in BookAuthor table for category FITNESS books). 
+--n. Write a trigger that does not allow more than three author names to be associated 
+--with books under FITNESS category e.g. if a Book is added, it should only allow up to 
+--3 book authors to be recorded in BookAuthor table for category FITNESS books). 
 --Provide the appropriate test data and results. (4 marks)
 
 create or replace TRIGGER max_3_author_update
-BEFORE INSERT OR UPDATE  ON bookauthor--OF BA_AUTHORID ON BOOKAUTHOR
+BEFORE INSERT OR UPDATE  ON bookauthor
 FOR EACH ROW
 DECLARE
     max_3_authors EXCEPTION;
@@ -154,8 +148,7 @@ BEGIN
     INTO num_authors 
     FROM book b, bookauthor ba
     WHERE b.book_isbn = ba.ba_isbn
-    AND LOWER(b.book_category) = LOWER('FITNESS'); 
-
+    AND b.book_category = 'FITNESS'; 
     IF num_authors >2
     THEN
         RAISE max_3_authors;
