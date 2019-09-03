@@ -1,1 +1,2 @@
-# DB_Assign2
+# DB_SQL_Queries
+# SQL / Lin queries
