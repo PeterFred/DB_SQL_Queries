@@ -1,0 +1,23 @@
+function map() {
+    emit(this.gender,
+        {
+          weight: this.weight, 
+          count:1
+        });
+}
+
+function reduce(key, values) {
+    var result = {
+      count: 0,
+      weight: 0
+    }
+    for (var i=0; i < values.length; i++){
+        result.weight += values[i].weight;
+        result.count += values[i].count;
+    }
+
+    var avgWeight = result.weight / result.count;
+    return avgWeight;
+}
+
+db.hobbits.mapReduce(map, reduce, {out: "post_total"}).find();
